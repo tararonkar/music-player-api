@@ -66,9 +66,7 @@ export const getAllPlaylistForUser = async (req:Request, res: Response) => {
         const { user } = req.body;
 
         const playlistRepository = myDataSource.getRepository(Playlist);
-        console.log("User: ", user);
         const playlists = await playlistRepository.find({where: { user: { id: user.id } }, relations: ["tracks"]});
-        console.log("playlists: ", playlists);
         if(!playlists)
         {
             res.status(400).json({ message: "No playlists found!" });
@@ -88,7 +86,6 @@ export const createPlaylist = async (req: Request, res: Response) => {
         const playlistRepository = myDataSource.getRepository(Playlist);
 
         const playlists = await playlistRepository.find({ where: {  user: { id: user.id } , name: name }, relations: ["tracks"]});
-        console.log(playlists);
         if(playlists.length > 0){
             res.status(400).json({ message: "playlist already exists" });
         } else {

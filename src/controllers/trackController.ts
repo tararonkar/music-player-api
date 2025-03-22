@@ -44,8 +44,6 @@ export const createTrack = async (req: Request, res: Response) => {
     try{
         const { title, artist, album, genre, url, artwork } = req.body;
 
-        console.log("Body: ", req.body)
-
         const trackRepository = myDataSource.getRepository(Track);
         const newTrack = await trackRepository.create({
             title, 
