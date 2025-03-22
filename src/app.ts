@@ -32,8 +32,10 @@ const app = express()
 app.use(cors({
     "origin": "*",
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+    "allowedHeaders": "*",
+    "exposedHeaders": ['Content-Length', 'Content-Type', 'Authorization'],
     "preflightContinue": true,
-    "optionsSuccessStatus": 200
+    "credentials": true,
 }))
 app.use(express.json())
 
