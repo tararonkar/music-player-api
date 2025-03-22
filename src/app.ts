@@ -29,7 +29,12 @@ if(config.parsed){
 
 
 const app = express()
-app.use(cors())
+app.use(cors({
+    "origin": "*",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+    "preflightContinue": true,
+    "optionsSuccessStatus": 200
+}))
 app.use(express.json())
 
 app.use("/auth", authRoutes);
