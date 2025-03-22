@@ -6,6 +6,7 @@
 |---    |---        |---            |
 | auth/signin | POST | |
 | auth/signup | POST | |
+| auth/refresh | GET | |
 | track/       | GET   | |
 | track/:id    | GET   | |
 | track/       | POST  | |

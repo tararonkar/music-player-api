@@ -52,3 +52,14 @@ export const signin = async (req:Request, res: Response) => {
         }
     }
 }
+
+export const refresh = async(req: Request, res: Response) => {
+    try{
+        const { user } = req.body;
+
+        const refreshedToken = generateToken(user.id, user.role);
+        res.status(200).json({ token: refreshedToken });        
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+}
