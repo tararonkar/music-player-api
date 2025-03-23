@@ -29,5 +29,8 @@ export class User {
   @OneToMany(() => SongHistory, (history) => history.user)
   songHistory!: SongHistory[];
 
+  @Column({ nullable: true, default: null })
+  refreshToken!: string;
+
 
 }

@@ -2,8 +2,11 @@ import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import { myDataSource } from '../DataSource/app-data-source'
 import { User } from '../entity/user.entity'
-import { generateToken } from '../utils/jwt'
+import { generateRefreshToken, generateToken, verifyToken } from '../utils/jwt'
 
+interface DecodedToken {
+    id: string
+  }
 
 export const signup = async (req: Request, res: Response) => {
     const { username, password } = req.body;
@@ -23,10 +26,13 @@ export const signup = async (req: Request, res: Response) => {
         });
         
         await userRepository.save(newUser);
-
         const token = generateToken(newUser.id, newUser.role);
+        const refreshToken = generateRefreshToken(newUser.id, newUser.role);
 
-        res.json({ token });
+        newUser.refreshToken = refreshToken;
+        await userRepository.save(newUser);
+
+        res.json({ accessToken: token, refreshToken });
     }
 
 }
@@ -47,19 +53,40 @@ export const signin = async (req:Request, res: Response) => {
         }
         else{
             const token = generateToken(user!.id, user!.role);
+            const refreshToken = generateRefreshToken(user.id, user.role);
+            user.refreshToken = refreshToken;
+            await userRepository.save(user);
 
-            res.json({token});
+            res.json({accessToken: token, refreshToken});
         }
     }
 }
 
 export const refresh = async(req: Request, res: Response) => {
     try{
-        const { user } = req.body;
+        const { user, refreshToken } = req.body;
 
-        const refreshedToken = generateToken(user.id, user.role);
-        res.status(200).json({ token: refreshedToken });        
+        if(!refreshToken){
+            res.status(401).json({message: "Refresh token required!"});
+        } else {
+            const decoded = verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET );
+            const userId = (decoded as DecodedToken).id;
+
+            const userRepository = myDataSource.getRepository(User);
+            const existingUser = await userRepository.findOne({where: {id: userId}});
+            const userRefreshToken = existingUser?.refreshToken ?? null;
+            if( !existingUser || !userRefreshToken){
+                res.status(401).json({ message: "Invalid refresh token" });
+            } else {
+                const accessToken = generateToken(userId, user.role);
+                const newRefreshToken = generateRefreshToken(userId, user.role);
+                existingUser.refreshToken = newRefreshToken;
+                await userRepository.save(existingUser);
+
+                res.status(200).json({ accessToken, refreshToken: newRefreshToken});
+            }
+        }                
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(401).json({ message: "Invalid refresh token error" });
     }
 }
